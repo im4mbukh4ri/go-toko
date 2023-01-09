@@ -1,13 +1,13 @@
 package app
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/im4mbukh4ri/go-toko/database/seeders"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -37,11 +37,7 @@ type DBConfig struct {
 
 func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 	fmt.Println("welcome to go-toko")
-	// connection DB
-	server.InitializeDB(dbConfig)
-	//end connection db
 	server.InitializeRoutes()
-	seeders.DBSeed(server.DB)
 }
 
 func (server *Server) Run(addr string) {
@@ -64,14 +60,8 @@ func (server *Server) InitializeDB(dbConfig DBConfig) {
 		panic("Failed on connection to the database server")
 	}
 
-	for _, model := range RegisterModels() {
-		err = server.DB.Debug().AutoMigrate(model.Model)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	fmt.Println("Database Migrated Success")
 }
+
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -100,8 +90,13 @@ func Run() {
 	dbConfig.DBPort = getEnv("DB_PORT", "5432")
 	dbConfig.DBTimezone = getEnv("APP_TIMEZONE", "Asia/Jakarta")
 	dbConfig.DBDriver = getEnv("DB_DRIVER", "postgres")
+	flag.Parse()
+	arg := flag.Arg(0)
+	if arg != "" {
+		server.initCommands(appConfig, dbConfig)
+	} else {
+		server.Initialize(appConfig, dbConfig)
+		server.Run(":" + appConfig.AppPort)
+	}
 
-	server.Initialize(appConfig, dbConfig)
-
-	server.Run(":" + appConfig.AppPort)
 }

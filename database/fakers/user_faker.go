@@ -10,7 +10,6 @@ import (
 )
 
 func UserFaker(db *gorm.DB) *models.User {
-	// hash,err :=models.HashPassword("123456");
 	return &models.User{
 		ID:            uuid.New().String(),
 		FirstName:     faker.FirstName(),

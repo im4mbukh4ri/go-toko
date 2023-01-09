@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/im4mbukh4ri/go-toko/database/seeders"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -40,6 +41,7 @@ func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 	server.InitializeDB(dbConfig)
 	//end connection db
 	server.InitializeRoutes()
+	seeders.DBSeed(server.DB)
 }
 
 func (server *Server) Run(addr string) {
